@@ -7,6 +7,15 @@ class Exception {
   }
 }
 
+class ServerException extends Exception {
+  constructor(message, level) {
+    super(message)
+    this.name = "ServerException"
+    this.message = message
+    this.level = level
+  }
+}
+
 class AuthException extends Exception {
   constructor(message) {
     super(message)
@@ -17,7 +26,6 @@ class AuthException extends Exception {
 class FetchException extends Exception {
   constructor(message) {
     super(message)
-    this.message = message
     this.name = "FetchException"
     this.retries = 0
   }
@@ -62,7 +70,11 @@ const _checkFetchErrorAsync = async (r) => {
     catch (e) {
       // hide error from parsing
     }
-    if (o && typeof o === "object") {
+    if (o && typeof o === "object" && o.hasOwnProperty('status') && o.hasOwnProperty('message')) {
+      const e = new ServerException(o.message)
+      e.level = o.status
+      throw e
+    } else if (o && typeof o === "object") {
       throw o
     } else {
       throw Error(t)
@@ -127,5 +139,5 @@ const _fetchJsonWithRetryAsync =  async (url, options) => {
   return await response.json()
 }
 
-export { _fetchJsonAsync, _fetchTextAsync, _fetchOptionsWithBearer, _fetchOptionsWithBearerForGet, _fetchJsonWithRetryAsync, _fetchTextWithRetryAsync, AuthException, FetchException, _fetchOptions }
+export { _fetchJsonAsync, _fetchTextAsync, _fetchOptionsWithBearer, _fetchOptionsWithBearerForGet, _fetchJsonWithRetryAsync, _fetchTextWithRetryAsync, AuthException, FetchException, ServerException, _fetchOptions }
 
