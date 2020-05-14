@@ -42,8 +42,10 @@ const _fetchWithRetryAsync = async (url, options, n) => {
       try {
           return await _fetchAsync(url, options)
       } catch (err) {
-          // error.retries = i
-          error = err
+        if (err.hasOwnProperty('retries')) {
+          err.retries = i
+        }
+        error = err
       }
   }
   throw error
